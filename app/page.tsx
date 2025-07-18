@@ -62,7 +62,7 @@ interface StockTransaction {
 interface StockSummary {
   symbol: string
   symbolDetails?: StockSymbol
-  assetType: "stock" | "currency" | "gold" | "bank"
+  assetType: "stock" | "currency" | "gold" | "bank" | "crypto"
   totalQuantity: number
   averageCost: number
   totalCost: number
@@ -129,11 +129,11 @@ export default function StockCostCalculator() {
 
   // Güncel fiyatları çek
   const fetchCurrentPrices = useCallback(async () => {
-    const uniqueStocks = [...new Set(transactions.filter((t) => t.assetType === "stock").map((t) => t.symbol))]
-    const hasCurrency = transactions.some((t) => t.assetType === "currency")
-    const hasGold = transactions.some((t) => t.assetType === "gold")
-    const hasBank = transactions.some((t) => t.assetType === "bank")
-    const hasCrypto = transactions.some((t) => t.assetType === "crypto")
+    const uniqueStocks = [...new Set(transactions.filter((t: StockTransaction) => t.assetType === "stock").map((t) => t.symbol))]
+    const hasCurrency = transactions.some((t: StockTransaction) => t.assetType === "currency")
+    const hasGold = transactions.some((t: StockTransaction) => t.assetType === "gold")
+    const hasBank = transactions.some((t: StockTransaction) => t.assetType === "bank")
+    const hasCrypto = transactions.some((t: StockTransaction) => t.assetType === "crypto")
 
     if (uniqueStocks.length === 0 && !hasCurrency && !hasGold && !hasBank && !hasCrypto) return
 
@@ -221,7 +221,7 @@ export default function StockCostCalculator() {
       // Kripto fiyatları
       if (hasCrypto) {
         const uniqueCryptos = [
-          ...new Set(transactions.filter((t) => t.assetType === "crypto").map((t) => t.symbolName)),
+          ...new Set(transactions.filter((t: StockTransaction) => t.assetType === "crypto").map((t: StockTransaction) => t.symbolName)),
         ]
         if (uniqueCryptos.length > 0) {
           promises.push(
@@ -353,7 +353,7 @@ export default function StockCostCalculator() {
 
   const calculateStockSummary = (): StockSummary[] => {
     const stockGroups = transactions.reduce(
-      (acc, transaction) => {
+      (acc: Record<string, StockTransaction[]>, transaction: StockTransaction) => {
         const key = `${transaction.symbol}-${transaction.assetType}`
         if (!acc[key]) {
           acc[key] = []
@@ -362,13 +362,13 @@ export default function StockCostCalculator() {
         return acc
       },
       {} as Record<string, StockTransaction[]>,
-    )
+    ) as Record<string, StockTransaction[]>
 
     return Object.entries(stockGroups).map(([key, txns]) => {
       let totalQuantity = 0
       let totalCost = 0
 
-      txns.forEach((txn) => {
+      txns.forEach((txn: StockTransaction) => {
         if (txn.type === "buy") {
           totalQuantity += txn.quantity
           totalCost += txn.quantity * txn.price
@@ -440,7 +440,7 @@ ${portfolioText}
 ${totalProfitLoss >= 0 ? "📈" : "📉"} Toplam ${totalProfitLoss >= 0 ? "Kar" : "Zarar"}: ${formatCurrency(Math.abs(totalProfitLoss))} (${totalProfitLoss >= 0 ? "+" : ""}${totalProfitLossPercentage.toFixed(2)}%)
 📊 Toplam İşlem: ${transactions.length}
 
-📱 Bu rapor https://portfoy-takip.vercel.app adresinden oluşturulmuştur.
+📱 Bu rapor https://portfoy.ramsan.tr/ adresinden oluşturulmuştur.
 🚀 Ücretsiz portföy takip sistemi - Hisse, kripto, döviz, altın takibi`
 
     try {
